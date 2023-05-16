@@ -2,6 +2,19 @@
   "version": 3,
   "targets": {
     ".NETFramework,Version=v4.7.2": {
+      "Discord.Addons.Interactive/2.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Discord.Net.Commands": "2.2.0",
+          "Discord.Net.WebSocket": "2.2.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Discord.Addons.Interactive.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Discord.Addons.Interactive.dll": {}
+        }
+      },
       "Discord.Net/3.10.0": {
         "type": "package",
         "dependencies": {
@@ -277,6 +290,19 @@
       }
     },
     ".NETFramework,Version=v4.7.2/win": {
+      "Discord.Addons.Interactive/2.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Discord.Net.Commands": "2.2.0",
+          "Discord.Net.WebSocket": "2.2.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Discord.Addons.Interactive.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Discord.Addons.Interactive.dll": {}
+        }
+      },
       "Discord.Net/3.10.0": {
         "type": "package",
         "dependencies": {
@@ -552,6 +578,19 @@
       }
     },
     ".NETFramework,Version=v4.7.2/win-x64": {
+      "Discord.Addons.Interactive/2.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Discord.Net.Commands": "2.2.0",
+          "Discord.Net.WebSocket": "2.2.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Discord.Addons.Interactive.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Discord.Addons.Interactive.dll": {}
+        }
+      },
       "Discord.Net/3.10.0": {
         "type": "package",
         "dependencies": {
@@ -827,6 +866,19 @@
       }
     },
     ".NETFramework,Version=v4.7.2/win-x86": {
+      "Discord.Addons.Interactive/2.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Discord.Net.Commands": "2.2.0",
+          "Discord.Net.WebSocket": "2.2.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Discord.Addons.Interactive.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Discord.Addons.Interactive.dll": {}
+        }
+      },
       "Discord.Net/3.10.0": {
         "type": "package",
         "dependencies": {
@@ -1103,6 +1155,18 @@
     }
   },
   "libraries": {
+    "Discord.Addons.Interactive/2.0.0": {
+      "sha512": "j/bkGeDniPuODOOC+3ZpKvLmoG0z1NHSZrVu6bnaUEYd0tMY4TxaIwl36ue7fK9MXrqQc8VcjcDnvM6JX+V6HA==",
+      "type": "package",
+      "path": "discord.addons.interactive/2.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "discord.addons.interactive.2.0.0.nupkg.sha512",
+        "discord.addons.interactive.nuspec",
+        "lib/netstandard2.0/Discord.Addons.Interactive.dll"
+      ]
+    },
     "Discord.Net/3.10.0": {
       "sha512": "X5V2lM8YO3Vf1oqxmL1/zSAOKmIZ7AAlxbpgdelQlCKXWZSJeEadLqxQRLCa/z6VsK+btdfNHZFxeQjqYPQ9mQ==",
       "type": "package",
@@ -1636,6 +1700,7 @@
   },
   "projectFileDependencyGroups": {
     ".NETFramework,Version=v4.7.2": [
+      "Discord.Addons.Interactive >= 2.0.0",
       "Discord.Net >= 3.10.0"
     ]
   },
@@ -1677,6 +1742,10 @@
     "frameworks": {
       "net472": {
         "dependencies": {
+          "Discord.Addons.Interactive": {
+            "target": "Package",
+            "version": "[2.0.0, )"
+          },
           "Discord.Net": {
             "target": "Package",
             "version": "[3.10.0, )"
