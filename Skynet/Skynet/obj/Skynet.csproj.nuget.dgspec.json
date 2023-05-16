@@ -1,0 +1,61 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\Luke\\Documents\\Skynet\\Skynet\\Skynet\\Skynet.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\Luke\\Documents\\Skynet\\Skynet\\Skynet\\Skynet.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Luke\\Documents\\Skynet\\Skynet\\Skynet\\Skynet.csproj",
+        "projectName": "Skynet",
+        "projectPath": "C:\\Users\\Luke\\Documents\\Skynet\\Skynet\\Skynet\\Skynet.csproj",
+        "packagesPath": "C:\\Users\\Luke\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Luke\\Documents\\Skynet\\Skynet\\Skynet\\obj\\",
+        "projectStyle": "PackageReference",
+        "skipContentFileWrite": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Luke\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net472"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net472": {
+            "projectReferences": {}
+          }
+        }
+      },
+      "frameworks": {
+        "net472": {
+          "dependencies": {
+            "Discord.Net": {
+              "target": "Package",
+              "version": "[3.10.0, )"
+            }
+          }
+        }
+      },
+      "runtimes": {
+        "win": {
+          "#import": []
+        },
+        "win-x64": {
+          "#import": []
+        },
+        "win-x86": {
+          "#import": []
+        }
+      }
+    }
+  }
+}
