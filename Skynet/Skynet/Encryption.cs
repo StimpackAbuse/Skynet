@@ -5,13 +5,18 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Encryption;
 
 namespace Skynet
 {
     public class Encryption
     {
+        //https://github.com/NServiceBusExtensions/Newtonsoft.Json.Encryption#usage
+
         private static readonly int iteration = 100000;
-        private static readonly string randomVector = "Xx1O4WBoJTUFCcECE3Mof2eG0vmtBjgv";
+        private static readonly byte[] key = Encoding.UTF8.GetBytes("Xx1O4WBoJTUFCcECE3Mof2eG0vmtBjgv");
+        private static byte[] initVector;
 
         public static Rfc2898DeriveBytes CreateKey(string password)
         {
@@ -29,53 +34,64 @@ namespace Skynet
             return new Rfc2898DeriveBytes(vectorBytes, saltBytes, iteration);
         }
 
-        public static byte[] Encrypt(byte[] origin, string password)
+        public static string Encrypt<T>(string origin, T instance)
         {
-            RijndaelManaged aes = new RijndaelManaged();
-            Rfc2898DeriveBytes key = CreateKey(password);
-            Rfc2898DeriveBytes vector = CreateVector(randomVector);
-
-            aes.BlockSize = 128;
-            aes.KeySize = 256;
-            aes.Mode = CipherMode.CBC;
-            aes.Padding = PaddingMode.PKCS7;
-            aes.Key = key.GetBytes(32);
-            aes.IV = vector.GetBytes(16);
-
-            ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-
-            using (MemoryStream ms = new MemoryStream())
+            // per app domain
+            var factory = new EncryptionFactory();
+            var serializer = new JsonSerializer
             {
-                using (CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                ContractResolver = factory.GetContractResolver()
+            };
+
+            // transferred as meta data with the serialized payload
+            
+
+            string serialized;
+            using (var algorithm = new RijndaelManaged
+            {
+                Key = key
+            })
+            {
+                //TODO: store initVector for use in deserialization
+                initVector = algorithm.IV;
+                using (factory.GetEncryptSession(algorithm))
                 {
-                    cs.Write(origin, 0, origin.Length);
+                    var builder = new StringBuilder();
+                    using (var writer = new StringWriter(builder))
+                    {
+                        serializer.Serialize(writer, instance);
+                    }
+
+                    serialized = builder.ToString();
                 }
-                return ms.ToArray();
             }
+
+            return serialized;
         }
 
-        public static byte[] Decrypt(byte[] origin, string password)
+        public static T Decrypt<T>(string origin)
         {
-            RijndaelManaged aes = new RijndaelManaged();
-            Rfc2898DeriveBytes key = CreateKey(password);
-            Rfc2898DeriveBytes vector = CreateVector(randomVector);
-
-            aes.BlockSize = 128;
-            aes.KeySize = 256;
-            aes.Mode = CipherMode.CBC;
-            aes.Padding = PaddingMode.PKCS7;
-            aes.Key = key.GetBytes(32);
-            aes.IV = vector.GetBytes(16);
-
-            ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-
-            using (MemoryStream ms = new MemoryStream())
+            // per app domain
+            var factory = new EncryptionFactory();
+            var serializer = new JsonSerializer
             {
-                using (CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Write))
+                ContractResolver = factory.GetContractResolver()
+            };
+
+            // per deserialize session
+            using (var algorithm = new RijndaelManaged
+            {
+                IV = initVector,
+                Key = key
+            })
+            {
+                using (factory.GetDecryptSession(algorithm))
                 {
-                    cs.Write(origin, 0, origin.Length);
+                    var stringReader = new StringReader(origin);
+                    var jsonReader = new JsonTextReader(stringReader);
+                    var deserialized = serializer.Deserialize<T>(jsonReader);
+                    return deserialized;
                 }
-                return ms.ToArray();
             }
         }
     }
