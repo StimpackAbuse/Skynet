@@ -26,16 +26,16 @@ namespace Skynet
             public string token;
         }
 
-        private static string ENV_FILE = "SkyNet_env.json";
+        private static string ENV_FILE = "SkyNet_ENV.json";
         private static string PREFIX = "#";
 
         private string clientID = "";
         private string clientSecret = "";
         private string botToken = "";
 
-        private DiscordSocketClient client;
-        private CommandService command;
-        private IServiceProvider services;
+        private DiscordSocketClient? client;
+        private CommandService? command;
+        private IServiceProvider? services;
 
         private Task ClientLog(LogMessage log)
         {
@@ -44,11 +44,17 @@ namespace Skynet
         }
 
         #region Bot Initialization
+        /// <summary>
+        /// Bot initialization function.
+        /// </summary>
+        /// <returns></returns>
         public async Task RunBotAsync()
         {
             await Task.Run(() => TokenInitialize().GetAwaiter().GetResult());
 
-            client = new DiscordSocketClient(new DiscordSocketConfig { WebSocketProvider = Discord.Net.Providers.WS4Net.WS4NetProvider.Instance });
+            DiscordSocketConfig config = new DiscordSocketConfig { WebSocketProvider = Discord.Net.Providers.WS4Net.WS4NetProvider.Instance };
+
+            client = new DiscordSocketClient(config);
             command = new CommandService();
             services = new ServiceCollection().AddSingleton(client).AddSingleton(command).AddSingleton<InteractiveService>().BuildServiceProvider();
 
@@ -60,16 +66,35 @@ namespace Skynet
             await Task.Delay(-1);
         }
 
+        /// <summary>
+        /// Call this function to register commands.
+        /// </summary>
         public async Task RegisterCommandsAsync()
         {
+            if (client == null || command == null)
+            {
+                Console.WriteLine("ERROR: ESSENTIAL INSTANCE IS NULL - SHUTTING DOWN");
+                Environment.Exit((int)ErrorCode.MAINMDL_INSTANCE_INVALID);
+            }
+
             client.MessageReceived += HandleCommandAsync;
             await command.AddModulesAsync(Assembly.GetEntryAssembly(), services);
         }
 
+        /// <summary>
+        /// This function is called on command input.
+        /// </summary>
+        /// <param name="arg">Discord socket message.</param>
         public async Task HandleCommandAsync(SocketMessage arg)
         {
-            SocketUserMessage msg = arg as SocketUserMessage;
-            SocketCommandContext context = new SocketCommandContext(client, msg);
+            SocketUserMessage? msg = arg as SocketUserMessage;
+            SocketCommandContext? context = new SocketCommandContext(client, msg);
+
+            if (msg == null || command == null || client == null)
+            {
+                ErrorManager.WriteErrorMessage(ErrorCode.MAINMDL_INSTANCE_INVALID, true);
+                return;
+            }
 
             int argPos = 0;
 
@@ -83,6 +108,10 @@ namespace Skynet
                 if (!result.IsSuccess)
                     Console.WriteLine(result.ErrorReason);
             }
+            if (msg.MentionedUsers.Where((item) => item.Id == ulong.Parse(clientID)).Count() > 0 || msg.MentionedEveryone)
+            {
+                await MainModuleMentions.MentionAction(context, msg);
+            }
         }
         #endregion
 
@@ -94,11 +123,17 @@ namespace Skynet
         {
             Console.WriteLine("ENV FILE NOT FOUND - CONFIGURING MODE INITIATED");
             Console.Write("CLIENT ID: ");
-            string id = await Task.Run(() => Console.ReadLine());
+            string? id = await Task.Run(() => Console.ReadLine());
             Console.Write("CLIENT SECRET: ");
-            string secret = await Task.Run(() => Console.ReadLine());
+            string? secret = await Task.Run(() => Console.ReadLine());
             Console.Write("BOT TOKEN: ");
-            string token = await Task.Run(() => Console.ReadLine());
+            string? token = await Task.Run(() => Console.ReadLine());
+
+            if (id == null || secret == null || token == null)
+            {
+                ErrorManager.WriteErrorMessage(ErrorCode.MAINMDL_WRONG_CONFIG, true);
+                return;
+            }
 
             ConfigureData data;
             data.id = id;

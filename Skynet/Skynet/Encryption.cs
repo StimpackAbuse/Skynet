@@ -16,7 +16,7 @@ namespace Skynet
 
         private static readonly int iteration = 100000;
         private static readonly byte[] key = Encoding.UTF8.GetBytes("Xx1O4WBoJTUFCcECE3Mof2eG0vmtBjgv");
-        private static byte[] initVector;
+        private static byte[]? initVector;
 
         public static Rfc2898DeriveBytes CreateKey(string password)
         {
@@ -53,9 +53,9 @@ namespace Skynet
             })
             {
                 //TODO: store initVector for use in deserialization
-                initVector = algorithm.IV;
                 using (factory.GetEncryptSession(algorithm))
                 {
+                    initVector = algorithm.IV;
                     var builder = new StringBuilder();
                     using (var writer = new StringWriter(builder))
                     {
