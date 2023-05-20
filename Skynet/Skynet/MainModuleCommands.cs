@@ -9,19 +9,28 @@ using Discord;
 using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
-using Discord.Addons.Interactive;
+using Discord.Interactions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Discord.Interactions;
+using System.Net.NetworkInformation;
 
 namespace Skynet
 {
     /// <summary>
     /// Class for commands towards bot.
     /// </summary>
-    class MainModuleCommands : InteractiveBase<SocketCommandContext>
+    public class MainModuleCommands : InteractionModuleBase<SocketInteractionContext>
     {
-        [Command("help")]
+        public InteractionService Commands { get; set; }
+        private CommandHandler handler;
+        const int argIdx = 1;
+
+        public MainModuleCommands(CommandHandler handler)
+        {
+            this.handler = handler;
+        }
+
+        [SlashCommand("help", "Ask for help")]
         public async Task Help()
         {
             var embed = new EmbedBuilder()
@@ -38,7 +47,17 @@ namespace Skynet
                 .WithDescription("Commands list, etc.")
                 .WithCurrentTimestamp();
 
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
+            await ReplyAsync(null, false, embed.Build());
+            await RespondAsync("Done");
+        }
+    }
+
+    public class MainModuleMessageCommands : ModuleBase<SocketCommandContext>
+    {
+        [Command("ping")]
+        public async Task Ping()
+        {
+            await Context.Channel.SendMessageAsync("Pong");
         }
     }
 }

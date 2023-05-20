@@ -9,10 +9,10 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System.Reflection;
 using System.Diagnostics.Tracing;
-using Discord.Addons.Interactive;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Encryption;
 using Microsoft.Extensions.DependencyInjection;
+using Discord.Interactions;
 
 namespace Skynet
 {
@@ -26,14 +26,16 @@ namespace Skynet
             public string token;
         }
 
-        private static string ENV_FILE = "SkyNet_ENV.json";
-        private static string PREFIX = "#";
+        private static string ENV_FILE = "Skynet_ENV.json";
+        private static string PREFIX = "!";
 
         private string clientID = "";
         private string clientSecret = "";
         private string botToken = "";
 
+        private InteractionService? interactionService;
         private DiscordSocketClient? client;
+        private InteractionService? interaction;
         private CommandService? command;
         private IServiceProvider? services;
 
@@ -52,17 +54,26 @@ namespace Skynet
         {
             await Task.Run(() => TokenInitialize().GetAwaiter().GetResult());
 
-            DiscordSocketConfig config = new DiscordSocketConfig { WebSocketProvider = Discord.Net.Providers.WS4Net.WS4NetProvider.Instance };
+            DiscordSocketConfig config = new DiscordSocketConfig { WebSocketProvider = Discord.Net.Providers.WS4Net.WS4NetProvider.Instance, 
+                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent };
 
-            client = new DiscordSocketClient(config);
+            services = new ServiceCollection().AddSingleton(config).AddSingleton<DiscordSocketClient>().
+                AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>())).AddSingleton<CommandHandler>().BuildServiceProvider();
+
+            client = services.GetRequiredService<DiscordSocketClient>();
+            interaction = services.GetRequiredService<InteractionService>();
+
             command = new CommandService();
-            services = new ServiceCollection().AddSingleton(client).AddSingleton(command).AddSingleton<InteractiveService>().BuildServiceProvider();
+
+            await services.GetRequiredService<CommandHandler>().InitializeAsync();
 
             client.Log += ClientLog;
+            client.Ready += RegisterCommandsAsync;
 
-            await RegisterCommandsAsync();
+            await HookMessageAsync();
             await client.LoginAsync(TokenType.Bot, botToken);
             await client.StartAsync();
+            
             await Task.Delay(-1);
         }
 
@@ -71,21 +82,38 @@ namespace Skynet
         /// </summary>
         public async Task RegisterCommandsAsync()
         {
-            if (client == null || command == null)
+            if (client == null || interaction == null || services == null)
             {
-                Console.WriteLine("ERROR: ESSENTIAL INSTANCE IS NULL - SHUTTING DOWN");
-                Environment.Exit((int)ErrorCode.MAINMDL_INSTANCE_INVALID);
+                ErrorManager.WriteErrorMessage(ErrorCode.MAINMDL_INSTANCE_INVALID, true);
+                return;
             }
 
-            client.MessageReceived += HandleCommandAsync;
+            interactionService = new InteractionService(client);
+
+            await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), services);
+            await interactionService.RegisterCommandsToGuildAsync(0);
+            //await interactionService.RegisterCommandsGloballyAsync(true); //This might take some time - use guildasync for tests
+
+            Console.WriteLine("Connected as {0}", client.CurrentUser);
+        }
+
+        public async Task HookMessageAsync()
+        {
+            if (client == null || services == null || command == null)
+            {
+                ErrorManager.WriteErrorMessage(ErrorCode.MAINMDL_INSTANCE_INVALID, true);
+                return;
+            }
+
             await command.AddModulesAsync(Assembly.GetEntryAssembly(), services);
+            client.MessageReceived += HandleMessageAsync;
         }
 
         /// <summary>
-        /// This function is called on command input.
+        /// This function is called on message input.
         /// </summary>
         /// <param name="arg">Discord socket message.</param>
-        public async Task HandleCommandAsync(SocketMessage arg)
+        public async Task HandleMessageAsync(SocketMessage arg)
         {
             SocketUserMessage? msg = arg as SocketUserMessage;
             SocketCommandContext? context = new SocketCommandContext(client, msg);
@@ -139,9 +167,8 @@ namespace Skynet
             data.id = id;
             data.secret = secret;
             data.token = token;
-            string configureJson = JsonConvert.SerializeObject(data);
 
-            File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), ENV_FILE), configureJson);
+            JSONUtility.Serialize(Directory.GetCurrentDirectory(), ENV_FILE, data);
         }
 
         /// <summary>
@@ -154,8 +181,7 @@ namespace Skynet
                 await CreateTokenJSON();
             }
 
-            string tokenJson = File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), ENV_FILE));
-            ConfigureData data = JsonConvert.DeserializeObject<ConfigureData>(tokenJson);
+            ConfigureData data = JSONUtility.Deserialize<ConfigureData>(Directory.GetCurrentDirectory(), ENV_FILE);
             clientID = data.id;
             clientSecret = data.secret;
             botToken = data.token;
