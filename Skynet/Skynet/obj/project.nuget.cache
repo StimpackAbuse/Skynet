@@ -1,10 +1,9 @@
 {
   "version": 2,
-  "dgSpecHash": "hbZydG6K9/usd/SWCdgN8dm9p3anU/SqFYTKjXmAdK1sUjdsbQk7/ShYYIiokJJ3BC6qHJcqAUmgMCyI2BqY4w==",
+  "dgSpecHash": "3oLMlhQurKzLnozar6uG4KXf23bGLV2sU+b8QEAMfX6yVOzfl3b3a8jRbTH4tWgJDEVU3sp9MgtHuC3QV0Y2EQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\Luke\\Documents\\Skynet\\Skynet\\Skynet\\Skynet.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Luke\\.nuget\\packages\\discord.addons.interactive\\2.0.0\\discord.addons.interactive.2.0.0.nupkg.sha512",
     "C:\\Users\\Luke\\.nuget\\packages\\discord.net\\3.10.0\\discord.net.3.10.0.nupkg.sha512",
     "C:\\Users\\Luke\\.nuget\\packages\\discord.net.commands\\3.10.0\\discord.net.commands.3.10.0.nupkg.sha512",
     "C:\\Users\\Luke\\.nuget\\packages\\discord.net.core\\3.10.0\\discord.net.core.3.10.0.nupkg.sha512",
