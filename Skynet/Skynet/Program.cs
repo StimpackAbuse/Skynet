@@ -91,7 +91,8 @@ namespace Skynet
             interactionService = new InteractionService(client);
 
             await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), services);
-            await interactionService.RegisterCommandsToGuildAsync(739841223250018344);
+            await interactionService.RegisterCommandsToGuildAsync(0);
+            //await interactionService.RegisterCommandsGloballyAsync(true); //This might take some time - use guildasync for tests
 
             Console.WriteLine("Connected as {0}", client.CurrentUser);
         }
