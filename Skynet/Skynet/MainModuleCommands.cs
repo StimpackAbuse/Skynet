@@ -24,12 +24,13 @@ namespace Skynet
         public InteractionService Commands { get; set; }
         private CommandHandler handler;
         const int argIdx = 1;
+        private MainModulePreferences? preference = null;
 
         public MainModuleCommands(CommandHandler handler)
         {
             this.handler = handler;
         }
-
+        /*
         [SlashCommand("help", "Ask for help")]
         public async Task Help()
         {
@@ -49,6 +50,19 @@ namespace Skynet
 
             await ReplyAsync(null, false, embed.Build());
             await RespondAsync("Done");
+        }
+        */
+        [SlashCommand("prefix", "Change Prefix")]
+        public async Task ChangePrefix(string prefix)
+        {
+            if (preference == null)
+            {
+                preference = new MainModulePreferences(Context.Guild.Id.ToString());
+            }
+
+            preference.UpdateServerPreference(new MainModulePreferences.Preference(Context.Guild.Id.ToString(), prefix));
+            Program.UpdatePreferences(preference);
+            await RespondAsync(string.Format("Prefix changed to {0}", prefix));
         }
     }
 

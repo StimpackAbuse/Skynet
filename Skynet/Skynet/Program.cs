@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Encryption;
 using Microsoft.Extensions.DependencyInjection;
 using Discord.Interactions;
+using System.Runtime.InteropServices;
 
 namespace Skynet
 {
@@ -29,15 +30,21 @@ namespace Skynet
         private static string ENV_FILE = "Skynet_ENV.json";
         private static string PREFIX = "!";
 
-        private string clientID = "";
-        private string clientSecret = "";
-        private string botToken = "";
+        private static string clientID = "";
+        private static string clientSecret = "";
+        private static string botToken = "";
+
+        public static string BotToken { get => botToken; }
+        public static string ClientID { get => clientID; }
+        public static string ClientSecret { get => clientSecret; }
 
         private InteractionService? interactionService;
         private DiscordSocketClient? client;
         private InteractionService? interaction;
         private CommandService? command;
         private IServiceProvider? services;
+
+        private static MainModulePreferences? mainModulePreferences = null;
 
         private Task ClientLog(LogMessage log)
         {
@@ -73,7 +80,7 @@ namespace Skynet
             await HookMessageAsync();
             await client.LoginAsync(TokenType.Bot, botToken);
             await client.StartAsync();
-            
+
             await Task.Delay(-1);
         }
 
@@ -91,8 +98,8 @@ namespace Skynet
             interactionService = new InteractionService(client);
 
             await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), services);
-            await interactionService.RegisterCommandsToGuildAsync(0);
-            //await interactionService.RegisterCommandsGloballyAsync(true); //This might take some time - use guildasync for tests
+            //await interactionService.RegisterCommandsToGuildAsync(739841223250018344);
+            await interactionService.RegisterCommandsGloballyAsync(true); //This might take some time - use guildasync for tests
 
             Console.WriteLine("Connected as {0}", client.CurrentUser);
         }
@@ -122,6 +129,11 @@ namespace Skynet
             {
                 ErrorManager.WriteErrorMessage(ErrorCode.MAINMDL_INSTANCE_INVALID, true);
                 return;
+            }
+
+            if (mainModulePreferences == null)
+            {
+                mainModulePreferences = new MainModulePreferences(context.Guild.Id.ToString());
             }
 
             int argPos = 0;
@@ -187,6 +199,12 @@ namespace Skynet
             botToken = data.token;
         }
         #endregion
+
+        public static void UpdatePreferences(MainModulePreferences pref)
+        {
+            mainModulePreferences = pref;
+            PREFIX = pref.Prefix;
+        }
 
         private static void Main(string[] args) => new Program().RunBotAsync().GetAwaiter().GetResult();
     }
