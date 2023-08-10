@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,25 +17,40 @@ namespace Skynet
         /// </summary>
         public static void Serialize<T>(string path, string fileName, T item)
         {
-            //In case fileName doesn't ends with .json
-            if (!fileName.EndsWith(jsonFormat))
-                fileName += jsonFormat;
-
-            string jsonContent = JsonConvert.SerializeObject(item);
-            File.WriteAllText(Path.Combine(path, fileName), jsonContent);
+            Serialize(Path.Combine(path, fileName), item);
         }
 
         /// <summary>
-        /// Reads JSON file and returns it.
+        /// Creates JSON file.
         /// </summary>
-        /// <returns></returns>
-        public static T? Deserialize<T>(string path, string fileName)
+        public static void Serialize<T>(string fileName, T item)
         {
             //In case fileName doesn't ends with .json
             if (!fileName.EndsWith(jsonFormat))
                 fileName += jsonFormat;
 
-            string fullPath = Path.Combine(path, fileName);
+            string jsonContent = JsonConvert.SerializeObject(item);
+            File.WriteAllText(fileName, jsonContent);
+        }
+
+        /// <summary>
+        /// Reads JSON file and returns it.
+        /// </summary>
+        public static T? Deserialize<T>(string path, string fileName)
+        {
+            return Deserialize<T>(Path.Combine(path, fileName));
+        }
+
+        /// <summary>
+        /// Reads JSON file and returns it.
+        /// </summary>
+        public static T? Deserialize<T>(string fileName)
+        {
+            //In case fileName doesn't ends with .json
+            if (!fileName.EndsWith(jsonFormat))
+                fileName += jsonFormat;
+
+            string fullPath = fileName;
             if (!File.Exists(fullPath))
             {
                 ErrorManager.WriteErrorMessage(ErrorCode.MAINMDL_JSON_FILE_NOT_FOUND);
